@@ -1,0 +1,65 @@
+package com.devpulse.Security;
+
+import com.devpulse.Service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+
+@Component
+@RequiredArgsConstructor
+public class OAuth2LoginSuccessHandler
+        extends SimpleUrlAuthenticationSuccessHandler {
+
+    private final UserService userService;
+    private final OAuth2AuthorizedClientService authorizedClientService;
+    @Override
+    public void onAuthenticationSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication)
+            throws IOException {
+        System.out.println("SUCCESS HANDLER EXECUTED");
+        OAuth2User oauthUser =
+                (OAuth2User) authentication.getPrincipal();
+
+        OAuth2AuthenticationToken token =
+                (OAuth2AuthenticationToken) authentication;
+        Integer githubIdInt = oauthUser.getAttribute("id");
+        OAuth2AuthorizedClient client =
+                authorizedClientService.loadAuthorizedClient(
+                        token.getAuthorizedClientRegistrationId(),
+                        token.getName());
+
+        String accessToken =
+                client.getAccessToken().getTokenValue();
+
+        String githubId = String.valueOf(githubIdInt);
+
+        String username =
+                oauthUser.getAttribute("login");
+
+        String avatarUrl =
+                oauthUser.getAttribute("avatar_url");
+
+        String email =
+                oauthUser.getAttribute("email");
+
+        userService.saveOrUpdateUser(
+                githubId,
+                username,
+                avatarUrl,
+                email,
+                accessToken);
+
+        response.sendRedirect("/");
+    }
+}
