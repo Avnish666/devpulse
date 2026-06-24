@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class ActivityUpdate {
 
     private String type;
-
     private String message;
+    private String timestamp;
 }

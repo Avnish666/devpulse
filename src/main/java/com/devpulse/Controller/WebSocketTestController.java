@@ -5,6 +5,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDateTime;
+
 @Controller
 public class WebSocketTestController {
 
@@ -15,7 +17,8 @@ public class WebSocketTestController {
 
         return new ActivityUpdate(
                 "TEST",
-                "WebSocket Working: " + message
+                "WebSocket Working: " + message,
+                LocalDateTime.now().toString()
         );
     }
 }
