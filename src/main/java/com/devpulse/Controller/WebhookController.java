@@ -27,11 +27,33 @@ public class WebhookController {
             @RequestBody Map<String, Object> payload
     ) {
 
+        Map<String, Object> repository =
+                (Map<String, Object>) payload.get("repository");
+
+        Map<String, Object> headCommit =
+                (Map<String, Object>) payload.get("head_commit");
+
+        Map<String, Object> pusher =
+                (Map<String, Object>) payload.get("pusher");
+
+        String repoName =
+                repository.get("name").toString();
+
+        String commitMessage =
+                headCommit.get("message").toString();
+
+        String pusherName =
+                pusher.get("name").toString();
+
         messagingTemplate.convertAndSend(
                 "/topic/activity",
                 new ActivityUpdate(
                         "COMMIT",
-                        "New GitHub event received!"
+                        pusherName +
+                                " pushed to " +
+                                repoName +
+                                " : " +
+                                commitMessage
                 )
         );
 
