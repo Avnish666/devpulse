@@ -5,12 +5,12 @@ import com.devpulse.Repository.CommitActivityRepository;
 import com.devpulse.Repository.GitHubRepoRepository;
 import com.devpulse.Repository.PullRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.*;
-
 @RestController
 @RequiredArgsConstructor
 public class AnalyticsController {

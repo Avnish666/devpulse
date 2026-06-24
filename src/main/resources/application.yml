@@ -16,6 +16,7 @@ spring:
         jdbc:
           time_zone: UTC
 
+
   data:
     redis:
       host: localhost
