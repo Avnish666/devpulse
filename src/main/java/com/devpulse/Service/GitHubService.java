@@ -12,6 +12,7 @@ import com.devpulse.Repository.GitHubRepoRepository;
 import com.devpulse.Repository.PullRequestRepository;
 import com.devpulse.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -34,8 +35,9 @@ public class GitHubService {
                         "application/vnd.github+json")
                 .build();
     }
+    @Cacheable("repositories")
     public List<GitHubRepoDto> fetchUserRepos(String token) {
-
+        System.out.println("Fetching repositories from GitHub API...");
         return getClient(token)
                 .get()
                 .uri("/user/repos?per_page=100")
@@ -44,11 +46,15 @@ public class GitHubService {
                 .collectList()
                 .block();
     }
+    @Cacheable(
+            value = "commits",
+            key = "#owner + '-' + #repo"
+    )
     public List<GitHubCommitDto> fetchRepoCommits(
             String token,
             String owner,
             String repo) {
-
+        System.out.println("Fetching commits from GitHub API...");
         return getClient(token)
                 .get()
                 .uri("/repos/{owner}/{repo}/commits?per_page=100",
@@ -166,11 +172,15 @@ public class GitHubService {
             );
         }
     }
+    @Cacheable(
+            value = "pullRequests",
+            key = "#owner + '-' + #repo"
+    )
     public List<GitHubPullRequestDto> fetchPullRequests(
             String token,
             String owner,
             String repo) {
-
+        System.out.println("Fetching PRs from GitHub API...");
         return getClient(token)
                 .get()
                 .uri("/repos/{owner}/{repo}/pulls?state=all&per_page=100",

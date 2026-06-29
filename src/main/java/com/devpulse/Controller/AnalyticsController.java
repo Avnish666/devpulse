@@ -1,10 +1,12 @@
 package com.devpulse.Controller;
+import com.devpulse.Dto.ContributionDay;
 import com.devpulse.Entity.CommitActivity;
 import com.devpulse.Entity.PullRequest;
 import com.devpulse.Repository.CommitActivityRepository;
 import com.devpulse.Repository.GitHubRepoRepository;
 import com.devpulse.Repository.PullRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,8 +21,9 @@ public class AnalyticsController {
     private final GitHubRepoRepository gitHubRepoRepository;
     private final PullRequestRepository pullRequestRepository;
     @GetMapping("/analytics/commit-frequency")
+    @Cacheable(value = "commitFrequency",sync = true)
     public Map<Object, Object> commitFrequency() {
-
+        System.out.println("Commit Frequency API executed");
         List<Object[]> results =
                 commitActivityRepository.getDailyCommitCounts();
 
@@ -34,8 +37,9 @@ public class AnalyticsController {
         return response;
     }
     @GetMapping("/analytics/languages")
+    @Cacheable(value = "languages",sync = true)
     public Map<String, Long> languageBreakdown() {
-
+        System.out.println("Languages API executed");
         List<Object[]> results =
                 gitHubRepoRepository.getLanguageBreakdown();
 
@@ -52,8 +56,9 @@ public class AnalyticsController {
         return response;
     }
     @GetMapping("/analytics/most-active-repositories")
+    @Cacheable(value = "repositories",sync = true)
     public List<Map<String, Object>> mostActiveRepositories() {
-
+        System.out.println("Most Active Repository API executed");
         List<Object[]> results =
                 commitActivityRepository
                         .getMostActiveRepositories();
@@ -75,6 +80,7 @@ public class AnalyticsController {
         return response;
     }
     @GetMapping("/analytics/streak")
+    @Cacheable(value = "streak",sync = true)
     public Map<String, Integer> streak() {
 
         List<CommitActivity> commits =
@@ -121,8 +127,9 @@ public class AnalyticsController {
         return result;
     }
     @GetMapping("/analytics/dashboard")
+    @Cacheable(value = "dashboard",sync = true)
     public Map<String, Object> dashboard() {
-
+        System.out.println("Dashboard API executed from Database");
         Map<String, Object> result =
                 new LinkedHashMap<>();
 
@@ -157,6 +164,7 @@ public class AnalyticsController {
         return result;
     }
     @GetMapping("/analytics/pr-cycle-time")
+    @Cacheable(value = "prCycle",sync = true)
     public Map<String, Object> prCycleTime() {
 
         List<PullRequest> prs =
@@ -194,5 +202,54 @@ public class AnalyticsController {
                 Math.round(averageHours * 100.0) / 100.0);
 
         return result;
+    }
+    @GetMapping("/analytics/contribution-heatmap")
+    @Cacheable(value = "contributionHeatmap",sync = true)
+    public List<ContributionDay> contributionHeatmap() {
+
+        List<Object[]> results =
+                commitActivityRepository.getDailyCommitCounts();
+
+        Map<LocalDate, Long> commitMap =
+                new HashMap<>();
+
+        for (Object[] row : results) {
+
+            commitMap.put(
+                    ((java.sql.Date) row[0]).toLocalDate(),
+                    ((Number) row[1]).longValue()
+            );
+
+        }
+
+        List<ContributionDay> heatmap =
+                new ArrayList<>();
+
+        LocalDate today = LocalDate.now();
+
+        LocalDate start =
+                today.minusDays(364);
+
+        while (!start.isAfter(today)) {
+
+            heatmap.add(
+
+                    new ContributionDay(
+
+                            start,
+
+                            commitMap.getOrDefault(
+                                    start,
+                                    0L
+                            )
+                    )
+            );
+
+            start = start.plusDays(1);
+
+        }
+
+        return heatmap;
+
     }
 }
