@@ -1,5 +1,6 @@
 package com.devpulse.Security;
 
+
 import com.devpulse.Service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +21,7 @@ public class OAuth2LoginSuccessHandler
         extends SimpleUrlAuthenticationSuccessHandler {
 
     private final UserService userService;
+    private final JwtService jwtService;
     private final OAuth2AuthorizedClientService authorizedClientService;
     @Override
     public void onAuthenticationSuccess(
@@ -53,13 +55,17 @@ public class OAuth2LoginSuccessHandler
         String email =
                 oauthUser.getAttribute("email");
 
-        userService.saveOrUpdateUser(
+        var user = userService.saveOrUpdateUser(
                 githubId,
                 username,
                 avatarUrl,
                 email,
                 accessToken);
+        String jwt =
+                jwtService.generateToken(user.getId());
 
-        response.sendRedirect("/");
+        response.sendRedirect(
+                "http://localhost:5173/login-success?token=" + jwt
+        );
     }
 }
