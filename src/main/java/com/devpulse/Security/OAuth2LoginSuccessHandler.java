@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import com.devpulse.Service.GitHubService;
 
 import java.io.IOException;
-//check
+
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler
