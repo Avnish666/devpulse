@@ -171,18 +171,14 @@ public class AnalyticsController {
         result.put(
                 "totalCommits",
                 commitActivityRepository.countByUser(user));
-
+        List<Object[]> languages = gitHubRepoRepository.getLanguageBreakdown(user);
         result.put(
                 "topLanguage",
-                gitHubRepoRepository
-                        .getLanguageBreakdown(user)
-                        .get(0)[0]);
-
+                languages.isEmpty() ? "N/A" : languages.get(0)[0]);
+        List<Object[]> active = commitActivityRepository.getMostActiveRepositories(user);
         result.put(
                 "mostActiveRepository",
-                commitActivityRepository
-                        .getMostActiveRepositories(user)
-                        .get(0)[0]);
+                active.isEmpty()? "N/A" : active.get(0)[0]);
 
         Map<String, Integer> streak = streak();
 
