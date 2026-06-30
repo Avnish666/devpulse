@@ -5,6 +5,7 @@ import com.devpulse.Service.GitHubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.devpulse.Security.SecurityUtils;
 
 @RestController
 public class TestController {
@@ -21,8 +22,8 @@ public class TestController {
 
     @GetMapping("/repos")
     public Object repos() {
-
-        User user = userRepository.findById(1L).orElseThrow();
+        Long userId = SecurityUtils.getCurrentUserId();
+        User user = userRepository.findById(userId).orElseThrow();
 
         return gitHubService.fetchUserRepos(
                 user.getGithubAccessToken()
@@ -30,16 +31,16 @@ public class TestController {
     }
     @GetMapping("/sync-repos")
     public String syncRepos() {
-
-        gitHubService.saveReposForUser(1L);
+        Long userId = SecurityUtils.getCurrentUserId();
+        gitHubService.saveReposForUser(userId);
 
         return "Repositories Synced!";
     }
     @GetMapping("/commits")
     public Object commits() {
-
+        Long userId = SecurityUtils.getCurrentUserId();
         User user =
-                userRepository.findById(1L)
+                userRepository.findById(userId)
                         .orElseThrow();
 
         return gitHubService.fetchRepoCommits(
@@ -50,9 +51,9 @@ public class TestController {
     }
     @GetMapping("/sync-commits")
     public String syncCommits() {
-
+        Long userId = SecurityUtils.getCurrentUserId();
         gitHubService.saveCommitsForRepo(
-                1L,
+                userId,
                 "Avnish666",
                 "ReplyAPP"
         );
@@ -61,16 +62,16 @@ public class TestController {
     }
     @GetMapping("/sync-all-commits")
     public String syncAllCommits() {
-
-        gitHubService.syncAllCommitsForUser(1L);
+        Long userId = SecurityUtils.getCurrentUserId();
+        gitHubService.syncAllCommitsForUser(userId);
 
         return "All Commits Synced!";
     }
     @GetMapping("/prs")
     public Object prs() {
-
+        Long userId = SecurityUtils.getCurrentUserId();
         User user =
-                userRepository.findById(1L)
+                userRepository.findById(userId)
                         .orElseThrow();
 
         return gitHubService.fetchPullRequests(
@@ -81,9 +82,9 @@ public class TestController {
     }
     @GetMapping("/sync-prs")
     public String syncPrs() {
-
+        Long userId = SecurityUtils.getCurrentUserId();
         gitHubService.savePullRequestsForRepo(
-                1L,
+                userId,
                 "Avnish666",
                 "dsa-code"
         );
@@ -92,8 +93,8 @@ public class TestController {
     }
     @GetMapping("/sync-all-prs")
     public String syncAllPrs() {
-
-        gitHubService.syncAllPullRequestsForUser(1L);
+        Long userId = SecurityUtils.getCurrentUserId();
+        gitHubService.syncAllPullRequestsForUser(userId);
 
         return "All PRs Synced!";
     }

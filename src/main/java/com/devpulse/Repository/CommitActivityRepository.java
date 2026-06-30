@@ -15,24 +15,27 @@ public interface CommitActivityRepository extends JpaRepository<CommitActivity, 
     @Query("""
 SELECT DATE(c.committedAt), COUNT(c)
 FROM CommitActivity c
+WHERE c.user = :user
 GROUP BY DATE(c.committedAt)
 ORDER BY DATE(c.committedAt)
 """)
-    List<Object[]> getDailyCommitCounts();
+    List<Object[]> getDailyCommitCounts(User user);
     @Query("""
 SELECT c.repoFullName, COUNT(c)
 FROM CommitActivity c
+WHERE c.user = :user
 GROUP BY c.repoFullName
 ORDER BY COUNT(c) DESC
 """)
-    List<Object[]> getMostActiveRepositories();
-    List<CommitActivity> findAllByOrderByCommittedAtAsc();
+    List<Object[]> getMostActiveRepositories(User user);
+    List<CommitActivity> findByUserOrderByCommittedAtAsc(User user);
+    long countByUser(User user);
     @Query("""
 SELECT c.repoFullName, COUNT(c)
 FROM CommitActivity c
+WHERE c.user = :user
 GROUP BY c.repoFullName
 ORDER BY COUNT(c) DESC
-LIMIT 1
 """)
-    List<Object[]> getTopRepository();
+    List<Object[]> getTopRepository(User user);
 }

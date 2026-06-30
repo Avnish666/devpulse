@@ -16,9 +16,11 @@ public interface GitHubRepoRepository extends JpaRepository<GitHubRepo, Long> {
     @Query("""
 SELECT r.language, COUNT(r)
 FROM GitHubRepo r
-WHERE r.language IS NOT NULL
+WHERE r.owner = :owner
+AND r.language IS NOT NULL
 GROUP BY r.language
 ORDER BY COUNT(r) DESC
 """)
-    List<Object[]> getLanguageBreakdown();
+    List<Object[]> getLanguageBreakdown(User owner);
+    long countByOwner(User owner);
 }

@@ -5,11 +5,14 @@ import com.devpulse.Entity.PullRequest;
 import com.devpulse.Repository.CommitActivityRepository;
 import com.devpulse.Repository.GitHubRepoRepository;
 import com.devpulse.Repository.PullRequestRepository;
+import com.devpulse.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.devpulse.Security.SecurityUtils;
+import com.devpulse.Entity.User;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -17,15 +20,29 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AnalyticsController {
 
+    private final UserRepository userRepository;
     private final CommitActivityRepository commitActivityRepository;
     private final GitHubRepoRepository gitHubRepoRepository;
     private final PullRequestRepository pullRequestRepository;
+    private User getCurrentUser() {
+
+        Long userId = SecurityUtils.getCurrentUserId();
+
+        return userRepository
+                .findById(userId)
+                .orElseThrow();
+    }
     @GetMapping("/analytics/commit-frequency")
-    @Cacheable(value = "commitFrequency",sync = true)
+    @Cacheable(value = "commitFrequency", key = "T(com.devpulse.Security.SecurityUtils).getCurrentUserId()")
     public Map<Object, Object> commitFrequency() {
+
         System.out.println("Commit Frequency API executed");
+
+        User user = getCurrentUser();
+
         List<Object[]> results =
-                commitActivityRepository.getDailyCommitCounts();
+                commitActivityRepository
+                        .getDailyCommitCounts(user);
 
         Map<Object, Object> response =
                 new LinkedHashMap<>();
@@ -36,17 +53,25 @@ public class AnalyticsController {
 
         return response;
     }
+
+
     @GetMapping("/analytics/languages")
-    @Cacheable(value = "languages",sync = true)
+    @Cacheable(value = "languages", key = "T(com.devpulse.Security.SecurityUtils).getCurrentUserId()")
     public Map<String, Long> languageBreakdown() {
+
         System.out.println("Languages API executed");
+
+        User user = getCurrentUser();
+
         List<Object[]> results =
-                gitHubRepoRepository.getLanguageBreakdown();
+                gitHubRepoRepository
+                        .getLanguageBreakdown(user);
 
         Map<String, Long> response =
                 new LinkedHashMap<>();
 
         for (Object[] row : results) {
+
             response.put(
                     (String) row[0],
                     (Long) row[1]
@@ -56,12 +81,13 @@ public class AnalyticsController {
         return response;
     }
     @GetMapping("/analytics/most-active-repositories")
-    @Cacheable(value = "repositories",sync = true)
+    @Cacheable(value = "repositories",key = "T(com.devpulse.Security.SecurityUtils).getCurrentUserId()")
     public List<Map<String, Object>> mostActiveRepositories() {
         System.out.println("Most Active Repository API executed");
+        User user = getCurrentUser();
         List<Object[]> results =
                 commitActivityRepository
-                        .getMostActiveRepositories();
+                        .getMostActiveRepositories(user);
 
         List<Map<String, Object>> response =
                 new ArrayList<>();
@@ -80,12 +106,12 @@ public class AnalyticsController {
         return response;
     }
     @GetMapping("/analytics/streak")
-    @Cacheable(value = "streak",sync = true)
+    @Cacheable(value = "streak",key = "T(com.devpulse.Security.SecurityUtils).getCurrentUserId()")
     public Map<String, Integer> streak() {
-
+        User user = getCurrentUser();
         List<CommitActivity> commits =
                 commitActivityRepository
-                        .findAllByOrderByCommittedAtAsc();
+                        .findByUserOrderByCommittedAtAsc(user);
 
         Set<LocalDate> days = new TreeSet<>();
 
@@ -127,49 +153,56 @@ public class AnalyticsController {
         return result;
     }
     @GetMapping("/analytics/dashboard")
-    @Cacheable(value = "dashboard",sync = true)
+    @Cacheable(
+            value = "dashboard",
+            key = "T(com.devpulse.Security.SecurityUtils).getCurrentUserId()"
+    )
     public Map<String, Object> dashboard() {
+
         System.out.println("Dashboard API executed from Database");
+        User user = getCurrentUser();
         Map<String, Object> result =
                 new LinkedHashMap<>();
 
         result.put(
                 "totalRepositories",
-                gitHubRepoRepository.count());
+                gitHubRepoRepository.countByOwner(user));
 
         result.put(
                 "totalCommits",
-                commitActivityRepository.count());
+                commitActivityRepository.countByUser(user));
 
         result.put(
                 "topLanguage",
                 gitHubRepoRepository
-                        .getLanguageBreakdown()
+                        .getLanguageBreakdown(user)
                         .get(0)[0]);
 
         result.put(
                 "mostActiveRepository",
                 commitActivityRepository
-                        .getMostActiveRepositories()
+                        .getMostActiveRepositories(user)
                         .get(0)[0]);
+
+        Map<String, Integer> streak = streak();
 
         result.put(
                 "currentStreak",
-                2);
+                streak.get("currentStreak"));
 
         result.put(
                 "longestStreak",
-                13);
+                streak.get("longestStreak"));
 
         return result;
     }
     @GetMapping("/analytics/pr-cycle-time")
-    @Cacheable(value = "prCycle",sync = true)
+    @Cacheable(value = "prCycle",key = "T(com.devpulse.Security.SecurityUtils).getCurrentUserId()")
     public Map<String, Object> prCycleTime() {
-
+        User user = getCurrentUser();
         List<PullRequest> prs =
                 pullRequestRepository
-                        .findByMergedAtIsNotNull();
+                        .findByUserAndMergedAtIsNotNull(user);
 
         double totalHours = 0;
 
@@ -204,11 +237,11 @@ public class AnalyticsController {
         return result;
     }
     @GetMapping("/analytics/contribution-heatmap")
-    @Cacheable(value = "contributionHeatmap",sync = true)
+    @Cacheable(value = "contributionHeatmap",key = "T(com.devpulse.Security.SecurityUtils).getCurrentUserId()")
     public List<ContributionDay> contributionHeatmap() {
-
+        User user = getCurrentUser();
         List<Object[]> results =
-                commitActivityRepository.getDailyCommitCounts();
+                commitActivityRepository.getDailyCommitCounts(user);
 
         Map<LocalDate, Long> commitMap =
                 new HashMap<>();
