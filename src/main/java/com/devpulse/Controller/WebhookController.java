@@ -27,7 +27,7 @@ public class WebhookController {
     public ResponseEntity<String> githubWebhook(
             @RequestBody Map<String, Object> payload
     ) {
-
+        System.out.println("WEBHOOK RECEIVED");
         Map<String, Object> repository =
                 (Map<String, Object>) payload.get("repository");
 

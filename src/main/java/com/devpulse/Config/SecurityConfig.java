@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
+//comment comment
     private final OAuth2LoginSuccessHandler successHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -36,6 +36,7 @@ public class SecurityConfig {
                                 "/login/**",
                                 "/oauth2/**",
                                 "/ws/**",
+                                "/webhook/**",
                                 "/topic/**",
                                 "/app/**"
                         )
