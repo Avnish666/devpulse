@@ -12,9 +12,10 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import com.devpulse.Service.GitHubService;
 
 import java.io.IOException;
-
+//check
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler
@@ -22,6 +23,7 @@ public class OAuth2LoginSuccessHandler
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final GitHubService gitHubService;
     private final OAuth2AuthorizedClientService authorizedClientService;
     @Override
     public void onAuthenticationSuccess(
@@ -61,6 +63,9 @@ public class OAuth2LoginSuccessHandler
                 avatarUrl,
                 email,
                 accessToken);
+        gitHubService.saveReposForUser(user.getId());
+        gitHubService.syncAllCommitsForUser(user.getId());
+        gitHubService.syncAllPullRequestsForUser(user.getId());
         String jwt =
                 jwtService.generateToken(user.getId());
 
