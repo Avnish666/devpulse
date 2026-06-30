@@ -20,7 +20,7 @@ public class WebSocketConfig
 
         config.setApplicationDestinationPrefixes("/app");
     }
-
+//commit
     @Override
     public void registerStompEndpoints(
             StompEndpointRegistry registry) {
