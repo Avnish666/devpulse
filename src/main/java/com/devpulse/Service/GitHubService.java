@@ -12,6 +12,7 @@ import com.devpulse.Repository.GitHubRepoRepository;
 import com.devpulse.Repository.PullRequestRepository;
 import com.devpulse.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -270,4 +271,28 @@ public class GitHubService {
             );
         }
     }
+    @CacheEvict(
+            value = {
+                    "repositories",
+                    "commits",
+                    "pullRequests",
+                    "dashboard",
+                    "commitFrequency",
+                    "languages",
+                    "repositories",
+                    "streak",
+                    "contributionHeatmap",
+                    "prCycle"
+            },
+            allEntries = true
+    )
+    public void sync(Long userId) {
+
+        saveReposForUser(userId);
+
+        syncAllCommitsForUser(userId);
+
+        syncAllPullRequestsForUser(userId);
+    }
+
 }
