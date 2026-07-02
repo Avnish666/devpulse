@@ -16,6 +16,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 
@@ -163,14 +164,29 @@ public class GitHubService {
 
         for (GitHubRepo repo : repos) {
 
-            String[] parts =
-                    repo.getFullName().split("/");
+            String[] parts = repo.getFullName().split("/");
 
-            saveCommitsForRepo(
-                    userId,
-                    parts[0],
-                    parts[1]
-            );
+            try {
+
+                saveCommitsForRepo(
+                        userId,
+                        parts[0],
+                        parts[1]
+                );
+
+            } catch (WebClientResponseException e) {
+
+                if (e.getStatusCode().value() == 409) {
+
+                    System.out.println(
+                            "Skipping repo: " + repo.getFullName()
+                    );
+
+                    continue;
+                }
+
+                throw e;
+            }
         }
     }
     @Cacheable(
