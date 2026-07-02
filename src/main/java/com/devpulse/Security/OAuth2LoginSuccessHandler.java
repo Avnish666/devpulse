@@ -75,7 +75,7 @@ public class OAuth2LoginSuccessHandler
                 jwtService.generateToken(user.getId());
 
         response.sendRedirect(
-                frontendUrl + "/login-success?token=" + token
+                frontendUrl + "/login-success?token=" + jwt
         );
     }
 }
