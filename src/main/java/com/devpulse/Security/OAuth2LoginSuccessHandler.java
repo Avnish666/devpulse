@@ -5,6 +5,9 @@ import com.devpulse.Service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -25,6 +28,8 @@ public class OAuth2LoginSuccessHandler
     private final JwtService jwtService;
     private final GitHubService gitHubService;
     private final OAuth2AuthorizedClientService authorizedClientService;
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
@@ -70,7 +75,7 @@ public class OAuth2LoginSuccessHandler
                 jwtService.generateToken(user.getId());
 
         response.sendRedirect(
-                "http://localhost:5173/login-success?token=" + jwt
+                frontendUrl + "/login-success?token=" + token
         );
     }
 }
