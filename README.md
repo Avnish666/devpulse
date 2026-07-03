@@ -139,24 +139,14 @@ React Dashboard
 
 ```
 DevPulse
-│
-├── Backend
-│   ├── Controller
-│   ├── Service
-│   ├── Repository
-│   ├── Entity
-│   ├── Config
-│   ├── Security
-│   └── DTO
-│
-├── Frontend
-│   ├── components
-│   ├── pages
-│   ├── api
-│   ├── assets
-│   └── websocket
-│
-└── Database
+  ├── Controller
+  ├── Service
+  ├── Repository
+  ├── Entity
+  ├── Config
+  ├── Security
+  └── DTO
+
 ```
 
 ---
